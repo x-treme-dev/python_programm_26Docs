@@ -14,6 +14,7 @@ Window.size = (500, 600)
 
 class MyApp(App):
     def build(self):
+        #-------------user interface----------------------------------------------------
         # Обработка закрытия окна по крестику
         Window.bind(on_request_close=self.app_window_close)
         # Создаём основной макет
@@ -23,42 +24,44 @@ class MyApp(App):
         table = GridLayout(cols=2, row_force_default=True, row_default_height=50, spacing=10)
 
         # Первая строка: метка и кнопка
-        self.lb_choice = Label(text='Выбрать директорию')
+        self.lb_choice = Label(text='Выбрать директорию:')
         btn_directory = Button(text='Выбрать')
         btn_directory.bind(on_press=self.choose_directory)
-
-        table.add_widget(self.lb_choice)
-        table.add_widget(btn_directory)
+        # Вторая строка: 2 метки 
+        self.lb_path = Label(text='Выбранная директория:')
+        self.lb_out_path = Label()
 
         
-        self.text_inp_path = TextInput(
-            text='',
-            multiline=True
-        )
- 
-      
-        table.add_widget(self.text_inp_path)
-        table.add_widget(Label(text=''))
- 
+        table.add_widget(self.lb_choice)
+        table.add_widget(btn_directory)
+        table.add_widget(self.lb_path)
+        table.add_widget(self.lb_out_path)
+       
         layout.add_widget(table)
 
         return layout
 
+        #---------------functions----------------------------------------------------------- 
     def choose_directory(self, instance):
         root = tk.Tk()
         root.withdraw()
         global directory_path
         directory_path = filedialog.askdirectory()
+        cat_dir_path = directory_path.split('/')[-1]
+        print(cat_dir_path)
 
-        if directory_path:
-            self.text_inp_path.text = f"Selected path: {directory_path}"
-            print(f"Выбранный путь: {directory_path}")
+        if cat_dir_path:
+            self.lb_out_path.text = f"{cat_dir_path}"
+            print(f"Выбранный путь: {cat_dir_path}")
         else:
+            self.lb_out_path.text = f"Выбор отменен!"
             print("Выбор отменен")
 
     def app_window_close(self, *args):
        self.stop()
        Window.close()
+
+    
 
 if __name__ == '__main__':
     MyApp().run()
