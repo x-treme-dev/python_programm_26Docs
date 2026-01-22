@@ -8,7 +8,7 @@ import tkinter as tk
 from tkinter import filedialog
 
 # Глобальная переменная для хранения пути
-directory_path = ''
+directory_path_source = ''
 # Установка размера окна
 Window.size = (500, 600)
 
@@ -31,7 +31,7 @@ class MyApp(App):
         self.lb_path = Label(text='')
         self.lb_source_path = Label(text='')
         # Третья строка: метка и кнопка
-        self.lb_target_choice = Label(text='Целевая директорию:')
+        self.lb_target_choice = Label(text='Целевая директория:')
         btn_target_directory = Button(text='Выбрать')
         #btn_directory.bind(on_press=self.choose_directory)
         
@@ -51,13 +51,28 @@ class MyApp(App):
     def choose_directory(self, instance):
         root = tk.Tk()
         root.withdraw()
-        global directory_path
-        directory_path = filedialog.askdirectory()
-        cat_dir_path = directory_path.split('/')[-1]
+        global directory_path_source
+        directory_path_source = filedialog.askdirectory()
+        cat_dir_path = directory_path_source.split('/')[-1]
         print(cat_dir_path)
 
         if cat_dir_path:
             self.lb_source_path.text = f"{cat_dir_path}"
+            print(f"Выбранный путь: {cat_dir_path}")
+        else:
+            self.lb_source_path.text = f"Выбор отменен!"
+            print("Выбор отменен")
+
+    def choose_directory(self, instance):
+        root = tk.Tk()
+        root.withdraw()
+        global directory_path
+        directory_path_source = filedialog.askdirectory()
+        cat_dir_path = directory_path_source.split('/')[-1]
+        
+        if cat_dir_path:
+            self.lb_source_path.text = f"{cat_dir_path}"
+            print(directory_path_source)
             print(f"Выбранный путь: {cat_dir_path}")
         else:
             self.lb_source_path.text = f"Выбор отменен!"
