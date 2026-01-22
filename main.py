@@ -24,19 +24,25 @@ class MyApp(App):
         table = GridLayout(cols=2, row_force_default=True, row_default_height=50, spacing=10)
 
         # Первая строка: метка и кнопка
-        self.lb_choice = Label(text='Выбрать директорию:')
-        btn_directory = Button(text='Выбрать')
-        btn_directory.bind(on_press=self.choose_directory)
+        self.lb_source_choice = Label(text='Исходная директория:')
+        btn_source_directory = Button(text='Выбрать')
+        btn_source_directory.bind(on_press=self.choose_directory)
         # Вторая строка: 2 метки 
-        self.lb_path = Label(text='Выбранная директория:')
-        self.lb_out_path = Label()
-
+        self.lb_path = Label(text='')
+        self.lb_source_path = Label(text='')
+        # Третья строка: метка и кнопка
+        self.lb_target_choice = Label(text='Целевая директорию:')
+        btn_target_directory = Button(text='Выбрать')
+        #btn_directory.bind(on_press=self.choose_directory)
         
-        table.add_widget(self.lb_choice)
-        table.add_widget(btn_directory)
+        
+        table.add_widget(self.lb_source_choice)
+        table.add_widget(btn_source_directory)
         table.add_widget(self.lb_path)
-        table.add_widget(self.lb_out_path)
-       
+        table.add_widget(self.lb_source_path)
+        table.add_widget(self.lb_target_choice)
+        table.add_widget(btn_target_directory)
+        
         layout.add_widget(table)
 
         return layout
@@ -51,11 +57,13 @@ class MyApp(App):
         print(cat_dir_path)
 
         if cat_dir_path:
-            self.lb_out_path.text = f"{cat_dir_path}"
+            self.lb_source_path.text = f"{cat_dir_path}"
             print(f"Выбранный путь: {cat_dir_path}")
         else:
-            self.lb_out_path.text = f"Выбор отменен!"
+            self.lb_source_path.text = f"Выбор отменен!"
             print("Выбор отменен")
+
+    
 
     def app_window_close(self, *args):
        self.stop()
