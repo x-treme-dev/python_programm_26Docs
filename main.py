@@ -9,6 +9,7 @@ import tkinter as tk
 from tkinter import filedialog
 import os
 import PyPDF2
+import shutil
 
 directory_path_source = ''
 directory_path_target = ''
@@ -113,7 +114,7 @@ class MyApp(App):
         else:
              self.lb_user_mess.text = 'Недостаточно данных!'
 
-    
+    ''' 
     def search_pdf(self, instance):
       global directory_path_source
       global directory_path_target
@@ -135,7 +136,51 @@ class MyApp(App):
                 except (PyPDF2.errors.PdfReadError, PermissionError) as e:
                     print(f"Не удалось прочитать {filepath}: {e}")
 
-    
+        '''
+
+
+
+    def move_found_files(self, files_list, target_dir):
+        """
+        Перемещает список файлов в указанную директорию.
+        """
+        if not os.path.exists(target_dir):
+            os.makedirs(target_dir)
+        for file_path in files_list:
+            filename = os.path.basename(file_path)
+            try:
+                shutil.move(file_path, os.path.join(target_dir, filename))
+                print(f"Файл {file_path} перемещен в {target_dir}")
+            except Exception as e:
+                print(f"Не удалось переместить {file_path}: {e}")
+
+    def search_pdf(self, instance):
+        global directory_path_source
+        global directory_path_target
+        search_text = 'ОСП по Киевскому району г. Симферополя'
+        found_files = []
+
+        for root, dirs, files in os.walk(directory_path_source):
+            for filename in files:
+                if filename.lower().endswith('.pdf'):
+                    filepath = os.path.join(root, filename)
+                    try:
+                        with open(filepath, 'rb') as file:
+                            reader = PyPDF2.PdfReader(file)
+                            # Обход всех страниц
+                            for page_num in range(len(reader.pages)):
+                                page = reader.pages[page_num]
+                                text = page.extract_text()
+                                if text and search_text in text:
+                                    print(f"Файл {filepath} содержит искомый текст на странице {page_num + 1}.")
+                                    found_files.append(filepath)
+                                    break  # Можно остановить поиск по файлу после нахождения
+                    except (PyPDF2.errors.PdfReadError, PermissionError) as e:
+                        print(f"Не удалось прочитать {filepath}: {e}")
+
+        # После поиска перемещаем все найденные файлы
+        target_directory = os.path.join(directory_path_target, 'Отсортированные')
+        self.move_found_files(found_files, target_directory) 
 
         
        
