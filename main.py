@@ -1,5 +1,6 @@
 from kivy.app import App
 from kivy.uix.gridlayout import GridLayout
+from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
 from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
@@ -41,17 +42,7 @@ class MyApp(App):
         # Чертвертая строка: 2 метки
         self.lb_target_empty = Label(text='Выбрано:')
         self.lb_target_path = Label(text='0')
-        # Пятная строка: метка и кнопка
-        self.lb_message = Label(text='Сортировка:')
-        self.button_sort = Button(text='Выполнить')
-        self.button_sort.bind(on_press=self.check_val)
-       
 
-        
-        
-
-        
-        
         table.add_widget(self.lb_source_choice)
         table.add_widget(btn_source_directory)
         table.add_widget(self.lb_source_empty)
@@ -60,10 +51,21 @@ class MyApp(App):
         table.add_widget(btn_target_directory)
         table.add_widget(self.lb_target_empty)
         table.add_widget(self.lb_target_path)
-        table.add_widget(self.lb_message)
-        table.add_widget(self.button_sort) 
+       
+        # Отдельные контейнеры для кнопки и метки, чтобы растянуть их на всю ширину
+        button_container = BoxLayout(size_hint_y=None, height=50)
+        self.button_sort = Button(text='Сортировать', size_hint_x=1)
+        self.button_sort.bind(on_press=self.check_val)
+        button_container.add_widget(self.button_sort)
 
+        lb_container = BoxLayout(size_hint_y=None, height=50)
+        self.lb_user_mess = Label(size_hint_x=1)
+        lb_container.add_widget(self.lb_user_mess)
+             
+       
         layout.add_widget(table)
+        layout.add_widget(button_container)
+        layout.add_widget(lb_container)
 
         return layout
 
@@ -104,12 +106,12 @@ class MyApp(App):
         global directory_path_source, directory_path_target
         
         if directory_path_source and directory_path_target:
-            self.lb_message.text = 'Сортировка:'
-            self.button_sort.text = 'Готово!'
-            # Здесь можно вставить код сортировки
+             
+            # код сортировки
             self.search_pdf(instance)
+            self.lb_user_mess.text = 'Готово!'
         else:
-            self.lb_message.text = 'Недостаточно данных!'
+             self.lb_user_mess.text = 'Недостаточно данных!'
 
     
     def search_pdf(self, instance):
@@ -133,15 +135,12 @@ class MyApp(App):
                 except (PyPDF2.errors.PdfReadError, PermissionError) as e:
                     print(f"Не удалось прочитать {filepath}: {e}")
 
+    
+
         
        
 
  
-
-        
-
-    
-
     #------------------------------------end functions --------------------------------------------
 
     def app_window_close(self, *args):
