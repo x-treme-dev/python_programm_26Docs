@@ -13,7 +13,7 @@ import shutil
 
 directory_path_source = ''
 directory_path_target = ''
-
+count = 0
 # Установка размера окна
 Window.size = (500, 600)
 
@@ -30,14 +30,14 @@ class MyApp(App):
         table = GridLayout(cols=2, row_force_default=True, row_default_height=50, spacing=10)
 
         # Первая строка: метка и кнопка
-        self.lb_source_choice = Label(text='Исходная директория:')
+        self.lb_source_choice = Label(text='Откуда взять?')
         btn_source_directory = Button(text='Выбрать')
         btn_source_directory.bind(on_press=self.choose_source_directory)
         # Вторая строка: 2 метки 
         self.lb_source_empty = Label(text='Выбрано:')
         self.lb_source_path = Label(text='0')
         # Третья строка: метка и кнопка
-        self.lb_target_choice = Label(text='Целевая директория:')
+        self.lb_target_choice = Label(text='Куда поместить?')
         btn_target_directory = Button(text='Выбрать')
         btn_target_directory.bind(on_press=self.choose_target_directory)
         # Чертвертая строка: 2 метки
@@ -81,8 +81,8 @@ class MyApp(App):
         
         if cat_dir_path:
             self.lb_source_path.text = f"{cat_dir_path}"
-            print(directory_path_source)
-            print(f"Выбранный путь: {cat_dir_path}")
+            #print(directory_path_source)
+            print(f"Исходная директория: {cat_dir_path}")
         else:
             self.lb_source_path.text = f"Выбор отменен!"
             print("Выбор отменен")
@@ -97,8 +97,8 @@ class MyApp(App):
         
         if cat_dir_path:
             self.lb_target_path.text = f"{cat_dir_path}"
-            print(directory_path_target)
-            print(f"Выбранный путь: {cat_dir_path}")
+            #print(directory_path_target)
+            print(f"Целевая директория: {cat_dir_path}")
         else:
             self.lb_target_path.text = f"Выбор отменен!"
             print("Выбор отменен")
@@ -110,55 +110,36 @@ class MyApp(App):
              
             # код сортировки
             self.search_pdf(instance)
-            self.lb_user_mess.text = 'Готово!'
         else:
              self.lb_user_mess.text = 'Недостаточно данных!'
+             
 
-    ''' 
-    def search_pdf(self, instance):
-      global directory_path_source
-      global directory_path_target
-      search_text = 'ОСП по Киевскому району г. Симферополя'
-      for root, dirs, files in os.walk(directory_path_source):
-        for filename in files:
-            if filename.lower().endswith('.pdf'):
-                filepath = os.path.join(root, filename)
-                try:
-                    with open(filepath, 'rb') as file:
-                        reader = PyPDF2.PdfReader(file)
-                        # Обход всех страниц
-                        for page_num in range(len(reader.pages)):
-                            page = reader.pages[page_num]
-                            text = page.extract_text()
-                            if text and search_text in text:
-                                print(f"Файл {filepath} содержит искомый текст на странице {page_num + 1}.")
-                                break  # Можно остановить поиск по файлу после нахождения
-                except (PyPDF2.errors.PdfReadError, PermissionError) as e:
-                    print(f"Не удалось прочитать {filepath}: {e}")
-
-        '''
-
-
-
-    def move_found_files(self, files_list, target_dir):
+    def copy_found_files(self, files_list, target_dir):
+        print(f"Копирование...")
         """
-        Перемещает список файлов в указанную директорию.
+        Копирует файлы в указанную директорию.
         """
+        global count
+        count = 0
         if not os.path.exists(target_dir):
             os.makedirs(target_dir)
         for file_path in files_list:
             filename = os.path.basename(file_path)
             try:
-                shutil.move(file_path, os.path.join(target_dir, filename))
-                print(f"Файл {file_path} перемещен в {target_dir}")
+                shutil.copy2(file_path, os.path.join(target_dir, filename))
+                #print(f"Файл {file_path} перемещен в {target_dir}")
+                count +=1
             except Exception as e:
                 print(f"Не удалось переместить {file_path}: {e}")
+  
 
     def search_pdf(self, instance):
+        print(f"Поиск...")
         global directory_path_source
         global directory_path_target
         search_text = 'ОСП по Киевскому району г. Симферополя'
         found_files = []
+        
 
         for root, dirs, files in os.walk(directory_path_source):
             for filename in files:
@@ -172,18 +153,19 @@ class MyApp(App):
                                 page = reader.pages[page_num]
                                 text = page.extract_text()
                                 if text and search_text in text:
-                                    print(f"Файл {filepath} содержит искомый текст на странице {page_num + 1}.")
                                     found_files.append(filepath)
-                                    break  # Можно остановить поиск по файлу после нахождения
+                                    break  
                     except (PyPDF2.errors.PdfReadError, PermissionError) as e:
                         print(f"Не удалось прочитать {filepath}: {e}")
 
-        # После поиска перемещаем все найденные файлы
-        target_directory = os.path.join(directory_path_target, 'Отсортированные')
-        self.move_found_files(found_files, target_directory) 
+  
 
-        
-       
+        # После поиска перемещаем все найденные файлы
+        target_directory = os.path.join(directory_path_target, 'Киевский ОСП')
+        self.copy_found_files(found_files, target_directory)
+        self.lb_user_mess.text = f'Киевский ОСП: {count} эл.'
+        print(f"Готово!")
+ 
 
  
     #------------------------------------end functions --------------------------------------------
