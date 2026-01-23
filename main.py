@@ -114,8 +114,8 @@ class MyApp(App):
              self.lb_user_mess.text = 'Недостаточно данных!'
              
 
-    def copy_found_files(self, files_list, target_dir):
-        print(f"Копирование...")
+    def copy_found_files(self, files_list, target_dir, name_dir):
+        print(f"Копирование в {name_dir}")
         """
         Копирует файлы в указанную директорию.
         """
@@ -129,7 +129,7 @@ class MyApp(App):
                 #print(f"Файл {file_path} перемещен в {target_dir}")
             except Exception as e:
                 print(f"Не удалось переместить {file_path}: {e}")
-  
+        self.lb_user_mess.text = 'Готово!'
 
     def search_pdf(self, instance):
         print(f"Поиск...")
@@ -192,16 +192,16 @@ class MyApp(App):
 
         # После поиска перемещаем все найденные файлы
         target_directory = os.path.join(directory_path_target, 'Киевский ОСП')
-        self.copy_found_files(kiev_found_files, target_directory)
+        self.copy_found_files(kiev_found_files, target_directory, 'Киевский ОСП')
         
         target_directory = os.path.join(directory_path_target, 'Ж_Д ОСП')
-        self.copy_found_files(zhd_found_files, target_directory)
+        self.copy_found_files(zhd_found_files, target_directory, 'Ж_Д ОСП' )
 
         target_directory = os.path.join(directory_path_target, 'Симф р-н ОСП')
-        self.copy_found_files(simf_found_files, target_directory)
+        self.copy_found_files(simf_found_files, target_directory, 'Симф р-н ОСП')
 
         target_directory = os.path.join(directory_path_target, 'Центральный ОСП')
-        self.copy_found_files(center_found_files, target_directory)
+        self.copy_found_files(center_found_files, target_directory, 'Центральный ОСП')
         #self.lb_user_mess.text = f'Киевский ОСП: {count} эл. Ж/Д ОСП: {count} эл.'
         print(f"Готово!")
  
