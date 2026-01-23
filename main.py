@@ -15,7 +15,7 @@ directory_path_source = ''
 directory_path_target = ''
  
 # Установка размера окна
-Window.size = (500, 600)
+Window.size = (500, 400)
 
 
 class MyApp(App):
@@ -70,7 +70,7 @@ class MyApp(App):
 
         return layout
 
-        #---------------functions----------------------------------------------------------- 
+    #--------------------------------------functions----------------------------------------------------------- 
     def choose_source_directory(self, instance):
         global directory_path_source
         root = tk.Tk()
