@@ -13,7 +13,7 @@ import shutil
 
 directory_path_source = ''
 directory_path_target = ''
-count = 0
+ 
 # Установка размера окна
 Window.size = (500, 600)
 
@@ -119,7 +119,6 @@ class MyApp(App):
         """
         Копирует файлы в указанную директорию.
         """
-        global count
         count = 0
         if not os.path.exists(target_dir):
             os.makedirs(target_dir)
@@ -128,7 +127,6 @@ class MyApp(App):
             try:
                 shutil.copy2(file_path, os.path.join(target_dir, filename))
                 #print(f"Файл {file_path} перемещен в {target_dir}")
-                count +=1
             except Exception as e:
                 print(f"Не удалось переместить {file_path}: {e}")
   
@@ -137,8 +135,18 @@ class MyApp(App):
         print(f"Поиск...")
         global directory_path_source
         global directory_path_target
-        search_text = 'ОСП по Киевскому району г. Симферополя'
-        found_files = []
+        OSP_kiev_1 = 'ОСП по Киевскому району г. Симферополя'
+        OSP_kiev_2 = 'Отделение судебных приставов по Киевскому району г. Симферополя'
+        OSP_ZHD_1 = 'ОСП по Железнодорожному району г. Симферополя'  
+        OSP_ZHD_2 = 'Отделение судебных приставов по Железнодорожному району г. Симферополя'
+        OSP_simf_1 = 'ОСП по Симферопольскому району г. Симферополя'  
+        OSP_simf_2 = 'Отделение судебных приставов по Симферопольскому району г. Симферополя'
+        OSP_center_1 = 'ОСП по Центральному району г. Симферополя'  
+        OSP_center_2 = 'Отделение судебных приставов по Центральному району г. Симферополя'
+        kiev_found_files = []
+        zhd_found_files = []
+        simf_found_files = []
+        center_found_files = []
         
 
         for root, dirs, files in os.walk(directory_path_source):
@@ -152,9 +160,31 @@ class MyApp(App):
                             for page_num in range(len(reader.pages)):
                                 page = reader.pages[page_num]
                                 text = page.extract_text()
-                                if text and search_text in text:
-                                    found_files.append(filepath)
-                                    break  
+                                if text and OSP_kiev_1 in text:
+                                    kiev_found_files.append(filepath)
+                                    break
+                                elif text and OSP_kiev_2 in text:
+                                     kiev_found_files.append(filepath)
+                                     break
+                                elif text and OSP_ZHD_1 in text:
+                                    zhd_found_files.append(filepath)
+                                    break
+                                elif text and OSP_ZHD_2 in text:
+                                     zhd_found_files.append(filepath)
+                                     break
+                                elif text and OSP_simf_1 in text:
+                                    simf_found_files.append(filepath)
+                                    break
+                                elif text and OSP_simf_2 in text:
+                                     simf_found_files.append(filepath)
+                                     break
+                                elif text and OSP_center_1 in text:
+                                    center_found_files.append(filepath)
+                                    break
+                                elif text and OSP_center_2 in text:
+                                     center_found_files.append(filepath)
+                                     break 
+                                    
                     except (PyPDF2.errors.PdfReadError, PermissionError) as e:
                         print(f"Не удалось прочитать {filepath}: {e}")
 
@@ -162,8 +192,17 @@ class MyApp(App):
 
         # После поиска перемещаем все найденные файлы
         target_directory = os.path.join(directory_path_target, 'Киевский ОСП')
-        self.copy_found_files(found_files, target_directory)
-        self.lb_user_mess.text = f'Киевский ОСП: {count} эл.'
+        self.copy_found_files(kiev_found_files, target_directory)
+        
+        target_directory = os.path.join(directory_path_target, 'Ж_Д ОСП')
+        self.copy_found_files(zhd_found_files, target_directory)
+
+        target_directory = os.path.join(directory_path_target, 'Симф р-н ОСП')
+        self.copy_found_files(simf_found_files, target_directory)
+
+        target_directory = os.path.join(directory_path_target, 'Центральный ОСП')
+        self.copy_found_files(center_found_files, target_directory)
+        #self.lb_user_mess.text = f'Киевский ОСП: {count} эл. Ж/Д ОСП: {count} эл.'
         print(f"Готово!")
  
 
