@@ -5,6 +5,8 @@ import tkinter as tk
 from tkinter import filedialog
 import shutil
 from PyPDF2 import PdfReader
+import re
+import random
 
 path_source = ''
 path_target = ''
@@ -15,6 +17,8 @@ params = [
     ["ОСП по Симферопольскому району г. Симферополя", "Отделение судебных приставов по Симферопольскому району г. Симферополя", "Симф р-н ОСП"],
     ["ОСП по Центральному району г. Симферополя", "Отделение судебных приставов по Центральному району г. Симферополя", "Центральный ОСП"]
 ]
+
+list_path = []
 
 def finish():
     root.destroy()
@@ -46,14 +50,16 @@ def get_directory(param):
 
 
 def copy_files(path_source, path_target, search_str1, search_str2, folder_name):
+    global list_path
     new_path_target = os.path.join(path_target, folder_name)
+    list_path = [new_path_target]
     os.makedirs(new_path_target, exist_ok=True)
-    print(f"Копирование в папку: {new_path_target}")
+    #print(f"Копирование в папку: {new_path_target}")
     for root, dirs, files in os.walk(path_source):
         for file in files:
             if file.lower().endswith('.pdf'):
                 full_path = os.path.join(root, file)
-                print(f"Обработка файла: {full_path}")
+                #print(f"Обработка файла: {full_path}")
                 try:
                     reader = PdfReader(full_path)
                     text = ""
@@ -61,13 +67,16 @@ def copy_files(path_source, path_target, search_str1, search_str2, folder_name):
                         text += page.extract_text() or ""
                     
                     if search_str1 in text or search_str2 in text:
-                        print(f"Файл подходит для копирования: {full_path}")
+                        #print(f"Файл подходит для копирования: {full_path}")
                         shutil.copy2(full_path, new_path_target)
-                        print(f"Файл скопирован: {full_path} -> {new_path_target}")
+                        print(f"Файл скопирован в {new_path_target}")
                 except Exception as e:
                     print(f"Ошибка при обработке файла {full_path}: {e}")
+    
+    for l in list_path:
+                rename_files(l)
     lb_message.config(text=f'Готово!')
-    print(f'Готово!')
+     
 
 def check_values(path_source, path_target):
     if path_source == '' or path_target == '':
@@ -76,7 +85,52 @@ def check_values(path_source, path_target):
     else:
         for p in params:
             copy_files(path_source, path_target, *p)
-           
+
+
+def sanitize_filename(name):
+    # Удаляем или заменяем недопустимые символы
+    return re.sub(r'[\\/:*?"<>|]', '_', name)
+
+def rename_files(directory):
+    for filename in os.listdir(directory):
+        if filename.lower().endswith('.pdf'):
+            file_path = os.path.join(directory, filename)
+            try:
+                reader = PdfReader(file_path)
+                text = ""
+                for page in reader.pages:
+                    text += page.extract_text() + "\n"
+            except Exception:
+                continue  # пропускаем файлы, которые не удалось прочитать
+            
+            # Ищем строку со словом 'Постановление'
+            match = re.search(r'([^\n]*Постановление[^\n]*)', text)
+            if match:
+                line = match.group(1)
+                words = line.split()
+                if len(words) >= 4:
+                    words_copy = words.copy()
+                    # сокращаем 2, 3 и 4 слово до 4 букв
+                    for idx in [1, 2, 3]:
+                        if len(words_copy[idx]) <= 4:
+                            words_copy[idx] = words_copy[idx][:4]
+                    
+                    new_name_base = ' '.join(words_copy)
+                    new_name_base = sanitize_filename(new_name_base)
+                    rand_num = random.randint(0, 1000)
+                    print(f'переименовывю в {new_name_base} {rand_num}')
+                    new_filename = f"{new_name_base}_{rand_num}.pdf"
+
+                    new_path = os.path.join(directory, new_filename)
+                    # Проверка, чтобы файл с таким именем не существовал
+                    if not os.path.exists(new_path):
+                        os.rename(file_path, new_path)
+                    else:
+                        # Можно добавить логику для повторной генерации имени
+                        pass
+
+
+################# interface ##########################################################           
 # Создаем главное окно
 root = Tk()
 root.title("26Docs")
