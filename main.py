@@ -1,221 +1,77 @@
-from kivy.app import App
-from kivy.uix.gridlayout import GridLayout
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.button import Button
-from kivy.uix.label import Label
-from kivy.uix.textinput import TextInput
-from kivy.core.window import Window
+import os
+from tkinter import *
+from tkinter import ttk
 import tkinter as tk
 from tkinter import filedialog
-import os
-import PyPDF2
-import shutil
-
-directory_path_source = ''
-directory_path_target = ''
- 
-# Установка размера окна
-Window.size = (500, 400)
 
 
-class MyApp(App):
-    def build(self):
-        #-------------user interface----------------------------------------------------
-        # Обработка закрытия окна по крестику
-        Window.bind(on_request_close=self.app_window_close)
-        # Создаём основной макет
-        layout = GridLayout(cols=1, padding=10, spacing=10)
+def finish():
+    root.destroy()
+    print("Closing app")
 
-        # Создаём таблицу с двумя строками и двумя столбцами
-        table = GridLayout(cols=2, row_force_default=True, row_default_height=50, spacing=10)
 
-        # Первая строка: метка и кнопка
-        self.lb_source_choice = Label(text='Откуда взять?')
-        btn_source_directory = Button(text='Выбрать')
-        btn_source_directory.bind(on_press=self.choose_source_directory)
-        # Вторая строка: 2 метки 
-        self.lb_source_empty = Label(text='Выбрано:')
-        self.lb_source_path = Label(text='0')
-        # Третья строка: метка и кнопка
-        self.lb_target_choice = Label(text='Куда поместить?')
-        btn_target_directory = Button(text='Выбрать')
-        btn_target_directory.bind(on_press=self.choose_target_directory)
-        # Чертвертая строка: 2 метки
-        self.lb_target_empty = Label(text='Выбрано:')
-        self.lb_target_path = Label(text='0')
-
-        table.add_widget(self.lb_source_choice)
-        table.add_widget(btn_source_directory)
-        table.add_widget(self.lb_source_empty)
-        table.add_widget(self.lb_source_path)
-        table.add_widget(self.lb_target_choice)
-        table.add_widget(btn_target_directory)
-        table.add_widget(self.lb_target_empty)
-        table.add_widget(self.lb_target_path)
-       
-        # Отдельные контейнеры для кнопки и метки, чтобы растянуть их на всю ширину
-        button_container = BoxLayout(size_hint_y=None, height=50)
-        self.button_sort = Button(text='Сортировать', size_hint_x=1)
-        self.button_sort.bind(on_press=self.check_val)
-        button_container.add_widget(self.button_sort)
-
-        lb_container = BoxLayout(size_hint_y=None, height=50)
-        self.lb_user_mess = Label(size_hint_x=1)
-        lb_container.add_widget(self.lb_user_mess)
-             
-       
-        layout.add_widget(table)
-        layout.add_widget(button_container)
-        layout.add_widget(lb_container)
-
-        return layout
-
-    #--------------------------------------functions----------------------------------------------------------- 
-    def choose_source_directory(self, instance):
-        global directory_path_source
-        root = tk.Tk()
-        root.withdraw()
-       
-        directory_path_source = filedialog.askdirectory()
-        cat_dir_path = directory_path_source.split('/')[-1]
-        
-        if cat_dir_path:
-            self.lb_source_path.text = f"{cat_dir_path}"
-            #print(directory_path_source)
-            print(f"Исходная директория: {cat_dir_path}")
-        else:
-            self.lb_source_path.text = f"Выбор отменен!"
-            print("Выбор отменен")
-
-    def choose_target_directory(self, instance):
-        global directory_path_target
-        root = tk.Tk()
-        root.withdraw()
-        
-        directory_path_target = filedialog.askdirectory()
-        cat_dir_path = directory_path_target.split('/')[-1]
-        
-        if cat_dir_path:
-            self.lb_target_path.text = f"{cat_dir_path}"
-            #print(directory_path_target)
-            print(f"Целевая директория: {cat_dir_path}")
-        else:
-            self.lb_target_path.text = f"Выбор отменен!"
-            print("Выбор отменен")
-
-    def check_val(self, instance):
-        global directory_path_source, directory_path_target
-        
-        if directory_path_source and directory_path_target:
-             
-            # код сортировки
-            self.search_pdf(instance)
-        else:
-             self.lb_user_mess.text = 'Недостаточно данных!'
-             
-
-    def copy_found_files(self, files_list, target_dir, name_dir):
-        print(f"Копирование в {name_dir}")
-        """
-        Копирует файлы в указанную директорию.
-        """
-        count = 0
-        if not os.path.exists(target_dir):
-            os.makedirs(target_dir)
-        for file_path in files_list:
-            filename = os.path.basename(file_path)
-            try:
-                shutil.copy2(file_path, os.path.join(target_dir, filename))
-                #print(f"Файл {file_path} перемещен в {target_dir}")
-            except Exception as e:
-                print(f"Не удалось переместить {file_path}: {e}")
-        self.lb_user_mess.text = 'Готово!'
-
-    def search_pdf(self, instance):
-        print(f"Поиск...")
-        global directory_path_source
-        global directory_path_target
-        OSP_kiev_1 = 'ОСП по Киевскому району г. Симферополя'
-        OSP_kiev_2 = 'Отделение судебных приставов по Киевскому району г. Симферополя'
-        OSP_ZHD_1 = 'ОСП по Железнодорожному району г. Симферополя'  
-        OSP_ZHD_2 = 'Отделение судебных приставов по Железнодорожному району г. Симферополя'
-        OSP_simf_1 = 'ОСП по Симферопольскому району г. Симферополя'  
-        OSP_simf_2 = 'Отделение судебных приставов по Симферопольскому району г. Симферополя'
-        OSP_center_1 = 'ОСП по Центральному району г. Симферополя'  
-        OSP_center_2 = 'Отделение судебных приставов по Центральному району г. Симферополя'
-        kiev_found_files = []
-        zhd_found_files = []
-        simf_found_files = []
-        center_found_files = []
-        
-
-        for root, dirs, files in os.walk(directory_path_source):
-            for filename in files:
-                if filename.lower().endswith('.pdf'):
-                    filepath = os.path.join(root, filename)
-                    try:
-                        with open(filepath, 'rb') as file:
-                            reader = PyPDF2.PdfReader(file)
-                            # Обход всех страниц
-                            for page_num in range(len(reader.pages)):
-                                page = reader.pages[page_num]
-                                text = page.extract_text()
-                                if text and OSP_kiev_1 in text:
-                                    kiev_found_files.append(filepath)
-                                    break
-                                elif text and OSP_kiev_2 in text:
-                                     kiev_found_files.append(filepath)
-                                     break
-                                elif text and OSP_ZHD_1 in text:
-                                    zhd_found_files.append(filepath)
-                                    break
-                                elif text and OSP_ZHD_2 in text:
-                                     zhd_found_files.append(filepath)
-                                     break
-                                elif text and OSP_simf_1 in text:
-                                    simf_found_files.append(filepath)
-                                    break
-                                elif text and OSP_simf_2 in text:
-                                     simf_found_files.append(filepath)
-                                     break
-                                elif text and OSP_center_1 in text:
-                                    center_found_files.append(filepath)
-                                    break
-                                elif text and OSP_center_2 in text:
-                                     center_found_files.append(filepath)
-                                     break 
-                                    
-                    except (PyPDF2.errors.PdfReadError, PermissionError) as e:
-                        print(f"Не удалось прочитать {filepath}: {e}")
-
+def get_directory(param):
+    path = filedialog.askdirectory()
+    path_source = ''
+    path_target = '' 
   
+    if path and param == 'source':
+        # Обновляем текст метки
+        lb_source.config(text=path)
+        print(f"Выбранный путь: {path}")
+        path_source = path
+    elif path and param == 'target':
+        # Обновляем текст метки
+        lb_target.config(text=path)
+        print(f"Выбранный путь: {path}")
+        path_target = path
+    elif path == '' and param == 'source':
+        lb_source.config(text='Выбор отменен!')
+        print("Выбор отменен")
+    elif path == '' and param == 'target':
+        lb_target.config(text='Выбор отменен!')
+        print("Выбор отменен")
 
-        # После поиска перемещаем все найденные файлы
-        kiev_target_directory = os.path.join(directory_path_target, 'Киевский ОСП')
-        self.copy_found_files(kiev_found_files, kiev_target_directory, 'Киевский ОСП')
-        
-        zhd_target_directory = os.path.join(directory_path_target, 'Ж_Д ОСП')
-        self.copy_found_files(zhd_found_files, zhd_target_directory, 'Ж_Д ОСП' )
+# Создаем главное окно
+root = Tk()
+root.title("26Docs")
+root.geometry("300x250+500+200")
+root.update_idletasks()
 
-        simf_target_directory = os.path.join(directory_path_target, 'Симф р-н ОСП')
-        self.copy_found_files(simf_found_files, simf_target_directory, 'Симф р-н ОСП')
+# Назначаем обработчик закрытия окна
+root.protocol("WM_DELETE_WINDOW", finish)
 
-        center_target_directory = os.path.join(directory_path_target, 'Центральный ОСП')
-        self.copy_found_files(center_found_files, center_target_directory, 'Центральный ОСП')
-        #self.lb_user_mess.text = f'Киевский ОСП: {count} эл. Ж/Д ОСП: {count} эл.'
-        print(f"Готово!")
+# Создаем интерфейс
+mainframe = ttk.Frame(root, padding="3 3 12 12")
+mainframe.grid(column=0, row=0, sticky=(N, W, E, S))
+root.columnconfigure(0, weight=1)
+root.rowconfigure(0, weight=1)
+
+# Откуда взять файлы?
+ttk.Label(mainframe, text="Откуда взять файлы?").grid(column=1, row=1, sticky=W)
+ttk.Button(mainframe, text='Выбрать', command=lambda:get_directory('source')).grid(column=2, row=1, sticky=W)
+ttk.Label(mainframe, text="Выбранная папка: ").grid(column=1, row=2, sticky=W)
+lb_source = ttk.Label(mainframe, text="...")
+lb_source.grid(column=2, row=2, sticky=W)
+
+# Куда положить файлы?
+ttk.Label(mainframe, text="Куда положить файлы?").grid(column=1, row=3, sticky=W)
+ttk.Button(mainframe, text='Выбрать', command=lambda:get_directory('target')).grid(column=2, row=3, sticky=W)
+ttk.Label(mainframe, text="Выбранная папка: ").grid(column=1, row=4, sticky=W)
+lb_target = ttk.Label(mainframe, text="...")
+lb_target.grid(column=2, row=4, sticky=W)
  
 
+for child in mainframe.winfo_children():
+    child.grid_configure(padx=5, pady=5)
+
+# Обработчик закрытия окна
+root.protocol("WM_DELETE_WINDOW", finish)
+
+root.mainloop()
+
+
+
  
-    #------------------------------------end functions --------------------------------------------
-
-    def app_window_close(self, *args):
-       self.stop()
-       Window.close()
-
     
-
-if __name__ == '__main__':
-    MyApp().run()
-  
 
