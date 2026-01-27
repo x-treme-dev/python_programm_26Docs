@@ -3,9 +3,18 @@ from tkinter import *
 from tkinter import ttk
 import tkinter as tk
 from tkinter import filedialog
+import shutil
+from PyPDF2 import PdfReader
 
 path_source = ''
-path_target = '' 
+path_target = ''
+
+params = [
+    ["ОСП по Киевскому району г. Симферополя", "Отделение судебных приставов по Киевскому району г. Симферополя", "Киевский ОСП"],
+    ["ОСП по Железнодорожному району г. Симферополя", "Отделение судебных приставов по Железнодорожному району г. Симферополя", "Ж_д ОСП"],
+    ["ОСП по Симферопольскому району г. Симферополя", "Отделение судебных приставов по Симферопольскому району г. Симферополя", "Симф р-н ОСП"],
+    ["ОСП по Центральному району г. Симферополя", "Отделение судебных приставов по Центральному району г. Симферополя", "Центральный ОСП"]
+]
 
 def finish():
     root.destroy()
@@ -35,13 +44,39 @@ def get_directory(param):
         lb_target.config(text='Выбор отменен!')
         print("Выбор отменен")
 
+
+def copy_files(path_source, path_target, search_str1, search_str2, folder_name):
+    new_path_target = os.path.join(path_target, folder_name)
+    os.makedirs(new_path_target, exist_ok=True)
+    print(f"Копирование в папку: {new_path_target}")
+    for root, dirs, files in os.walk(path_source):
+        for file in files:
+            if file.lower().endswith('.pdf'):
+                full_path = os.path.join(root, file)
+                print(f"Обработка файла: {full_path}")
+                try:
+                    reader = PdfReader(full_path)
+                    text = ""
+                    for page in reader.pages:
+                        text += page.extract_text() or ""
+                    
+                    if search_str1 in text or search_str2 in text:
+                        print(f"Файл подходит для копирования: {full_path}")
+                        shutil.copy2(full_path, new_path_target)
+                        print(f"Файл скопирован: {full_path} -> {new_path_target}")
+                except Exception as e:
+                    print(f"Ошибка при обработке файла {full_path}: {e}")
+    lb_message.config(text=f'Готово!')
+    print(f'Готово!')
+
 def check_values(path_source, path_target):
     if path_source == '' or path_target == '':
         lb_message.config(text = 'Недостаточно данных поиска!')
         print('Недостаточно данных для поиска!')
-        
-    
-
+    else:
+        for p in params:
+            copy_files(path_source, path_target, *p)
+           
 # Создаем главное окно
 root = Tk()
 root.title("26Docs")
