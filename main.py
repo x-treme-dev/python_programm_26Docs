@@ -60,6 +60,11 @@ ttk.Button(mainframe, text='Выбрать', command=lambda:get_directory('targe
 ttk.Label(mainframe, text="Выбранная папка: ").grid(column=1, row=4, sticky=W)
 lb_target = ttk.Label(mainframe, text="...")
 lb_target.grid(column=2, row=4, sticky=W)
+
+
+mainframe.grid_columnconfigure(1, weight=1)
+mainframe.grid_columnconfigure(2, weight=1)
+ttk.Button(mainframe, text='Сортировать').grid(column=1, row=5, columnspan=2, sticky=(W, E))
  
 
 for child in mainframe.winfo_children():
