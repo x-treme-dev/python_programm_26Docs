@@ -191,17 +191,17 @@ class MyApp(App):
   
 
         # После поиска перемещаем все найденные файлы
-        target_directory = os.path.join(directory_path_target, 'Киевский ОСП')
-        self.copy_found_files(kiev_found_files, target_directory, 'Киевский ОСП')
+        kiev_target_directory = os.path.join(directory_path_target, 'Киевский ОСП')
+        self.copy_found_files(kiev_found_files, kiev_target_directory, 'Киевский ОСП')
         
-        target_directory = os.path.join(directory_path_target, 'Ж_Д ОСП')
-        self.copy_found_files(zhd_found_files, target_directory, 'Ж_Д ОСП' )
+        zhd_target_directory = os.path.join(directory_path_target, 'Ж_Д ОСП')
+        self.copy_found_files(zhd_found_files, zhd_target_directory, 'Ж_Д ОСП' )
 
-        target_directory = os.path.join(directory_path_target, 'Симф р-н ОСП')
-        self.copy_found_files(simf_found_files, target_directory, 'Симф р-н ОСП')
+        simf_target_directory = os.path.join(directory_path_target, 'Симф р-н ОСП')
+        self.copy_found_files(simf_found_files, simf_target_directory, 'Симф р-н ОСП')
 
-        target_directory = os.path.join(directory_path_target, 'Центральный ОСП')
-        self.copy_found_files(center_found_files, target_directory, 'Центральный ОСП')
+        center_target_directory = os.path.join(directory_path_target, 'Центральный ОСП')
+        self.copy_found_files(center_found_files, center_target_directory, 'Центральный ОСП')
         #self.lb_user_mess.text = f'Киевский ОСП: {count} эл. Ж/Д ОСП: {count} эл.'
         print(f"Готово!")
  
