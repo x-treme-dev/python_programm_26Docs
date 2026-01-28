@@ -6,6 +6,7 @@ from tkinter import filedialog
 import shutil
 from PyPDF2 import PdfReader
 import re
+import hashlib
 import random
 
 path_source = ''
@@ -19,6 +20,7 @@ params = [
 ]
 
 list_path = []
+old_filename = []
 
 def finish():
     root.destroy()
@@ -76,6 +78,7 @@ def copy_files(path_source, path_target, search_str1, search_str2, folder_name):
     for l in list_path:
                 rename_files(l)
     lb_message.config(text=f'Готово!')
+    print('Готово!')
      
 
 def check_values(path_source, path_target):
@@ -88,54 +91,108 @@ def check_values(path_source, path_target):
 
 
 def sanitize_filename(name):
-    # Удаляем или заменяем недопустимые символы
-    return re.sub(r'[\\/:*?"<>|]', '_', name)
+    # Заменяем недопустимые символы на _
+    name = re.sub(r'[\\/:*?"<>|]', '_', name)
+    # Удаляем управляющие символы, например, переносы строк
+    name = re.sub(r'[\n\r\t]', '', name)
+    # Убираем лишние пробелы
+    name = name.strip()
+    # Удаляем запятую, если она есть в конце
+    name = re.sub(r',\s*$', '', name)
+    # Удаляем нижнее подчеркивание и ноль, если они идут в конце
+    name = re.sub(r'(_0)$', '', name)
+    return name
+
+def extract_sudebny_prikaz(text):
+    # Ищем вариации 'Судебный приказ' или 'c судебным приказом'
+    pattern = r'(Судебный приказ|судебный приказ|c судебным приказом|по делу)(.*?)(выданный органом|,|предмет исполнения)'
+    match = re.search(pattern, text, re.IGNORECASE | re.DOTALL)
+    if match:
+        # Берем все символы между найденными фразами
+        part = match.group(2).strip()
+        # Удаляем переносы строк, табуляции, запятые и кириллические символы
+        part = re.sub(r'[\n\r\t,а-яА-Я]', '', part).strip()
+        return part
+    return None
+
 
 def rename_files(directory):
     for filename in os.listdir(directory):
+        old_filename.append(filename)
         if filename.lower().endswith('.pdf'):
             file_path = os.path.join(directory, filename)
             try:
                 reader = PdfReader(file_path)
                 text = ""
                 for page in reader.pages:
-                    text += page.extract_text() + "\n"
-            except Exception:
-                continue  # пропускаем файлы, которые не удалось прочитать
+                    page_text = page.extract_text()
+                    if page_text:
+                        text += page_text + "\n"
+            except Exception as e:
+                print(f"Ошибка чтения {file_path}: {e}")
+                continue
             
-            # Ищем строку со словом 'Постановление'
-            match = re.search(r'([^\n]*Постановление[^\n]*)', text)
-            if match:
-                line = match.group(1)
-                words = line.split()
-                if len(words) >= 4:
-                    words_copy = words.copy()
-                    # сокращаем 2, 3 и 4 слово до 4 букв
-                    for idx in [1, 2, 3]:
-                        if len(words_copy[idx]) <= 4:
-                            words_copy[idx] = words_copy[idx][:4]
-                    
-                    new_name_base = ' '.join(words_copy)
-                    new_name_base = sanitize_filename(new_name_base)
-                    rand_num = random.randint(0, 1000)
-                    print(f'переименовывю в {new_name_base} {rand_num}')
-                    new_filename = f"{new_name_base}_{rand_num}.pdf"
-
-                    new_path = os.path.join(directory, new_filename)
-                    # Проверка, чтобы файл с таким именем не существовал
-                    if not os.path.exists(new_path):
-                        os.rename(file_path, new_path)
+            # Файл со строкой вида 124567/19/12421-СД Постановление пропускаем
+            pattern_doc_number = r'\d+/\d+/\d+-[А-Я]{2}\s*постановление'
+            if re.search(pattern_doc_number, text,  re.IGNORECASE):
+                continue
+            
+            # Остальной ваш код обработки...
+            if "ИЗВЕЩЕНИЕ" in text:
+                new_name_base = "ИЗВЕЩЕНИЕ"
+            elif "СООБЩЕНИЕ" in text:
+                new_name_base = "СООБЩЕНИЕ"
+            else:
+                pattern = r'([^\n]*?(Постановление|Документ:\s*Постановление)[^\n]*)'
+                matches_post = re.findall(pattern, text, re.IGNORECASE)
+                if matches_post:
+                    line = matches_post[0][0]
+                    words = line.split()
+                    try:
+                        index_postan = words.index('Постановление')
+                    except ValueError:
+                        try:
+                            index_postan = words.index('Постановление')
+                        except ValueError:
+                            index_postan = -1
+                    if index_postan != -1:
+                        replacement_word = 'ПОСТ'
+                        post_words = words[index_postan + 1:]
+                        post_words = post_words[:4]
+                        for i in range(1, len(post_words)):
+                            if len(post_words[i]) > 4:
+                                post_words[i] = post_words[i][:4]
+                        name_parts = [replacement_word] + post_words
+                        new_name_base = '_'.join(name_parts)
                     else:
-                        # Можно добавить логику для повторной генерации имени
-                        pass
+                        new_name_base = "Госусуги"
+                else:
+                    new_name_base = "Госусуги"
+                    
+            
+            sudebny_part = extract_sudebny_prikaz(text)
+            if sudebny_part:
+                new_name_base = f"{new_name_base}_{sudebny_part}"
+            
+            new_name_base = sanitize_filename(new_name_base)
+            new_path = os.path.join(directory, new_name_base + '.pdf')
 
+            if not os.path.exists(new_path):
+                os.rename(file_path, new_path)
+                
+    
 
 ################# interface ##########################################################           
 # Создаем главное окно
 root = Tk()
 root.title("26Docs")
-root.geometry("600x250+500+200")
+root.geometry("600x350+500+200")
 root.update_idletasks()
+
+
+style = ttk.Style()
+style.configure('.', font=('Courier New', 22))
+
 
 # Назначаем обработчик закрытия окна
 root.protocol("WM_DELETE_WINDOW", finish)
