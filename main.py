@@ -77,9 +77,9 @@ def copy_files(path_source, path_target, search_str1, search_str2, folder_name):
     
     for l in list_path:
                 rename_files(l)
-    lb_message.config(text=f'Готово!')
-    print('Готово!')
-     
+
+    lb_message.config(text='Готово!')
+                
 
 def check_values(path_source, path_target):
     if path_source == '' or path_target == '':
@@ -179,8 +179,8 @@ def rename_files(directory):
 
             if not os.path.exists(new_path):
                 os.rename(file_path, new_path)
-                
-    
+            print(f'Переименовано: {new_path}')
+ 
 
 ################# interface ##########################################################           
 # Создаем главное окно
@@ -231,7 +231,9 @@ for child in mainframe.winfo_children():
 # Обработчик закрытия окна
 root.protocol("WM_DELETE_WINDOW", finish)
 
+
 root.mainloop()
+
 
 
 
